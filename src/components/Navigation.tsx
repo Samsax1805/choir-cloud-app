@@ -14,22 +14,26 @@ export function Navigation({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: { id: View; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'music', label: 'Music & Files', icon: '' },
-    { id: 'minutes', label: 'Minutes & Receipts', icon: '' },
-    { id: 'debts', label: 'Debts & Accounts', icon: '💰' },
-    { id: 'voice', label: 'Voice Notes', icon: '🎤' },
-  ];
-
-  if (user.role === 'president') {
-    navItems.push({ id: 'audit', label: 'Audit Logs', icon: '📋' });
-    navItems.push({ id: 'admin', label: 'Admin', icon: '⚙️' });
-  }
+  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+  { id: 'music', label: 'Music & Files', icon: '🎵' },
+  { id: 'minutes', label: 'Minutes & Receipts', icon: '📋' },
+  { id: 'debts', label: 'Debts & Accounts', icon: '💰' },
+  { id: 'voice', label: 'Voice Notes', icon: '🎤' },
+];
 
   const handleNavClick = (view: View) => {
     onViewChange(view);
     setMobileMenuOpen(false);
   };
+
+if (user.role === 'provost' || user.role === 'president') {
+  navItems.push({ id: 'attendance', label: 'Attendance', icon: '📱' });
+}
+
+if (user.role === 'president') {
+  navItems.push({ id: 'audit', label: 'Audit Logs', icon: '📋' });
+  navItems.push({ id: 'admin', label: 'Admin', icon: '⚙️' });
+}
 
   return (
     <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
