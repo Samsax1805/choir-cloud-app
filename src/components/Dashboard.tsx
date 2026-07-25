@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import type { User, Currency, Debt } from '../types';
 
 export function Dashboard({ user, currency }: { user: User; currency: Currency }) {
+  // 1. All useState hooks grouped at the top
   const [stats, setStats] = useState({ members: 0, files: 0, pending: 0, overdue: 0 });
+  const [birthdayUsers, setBirthdayUsers] = useState<User[]>([]);
 
+  // 2. First useEffect: Stats
   useEffect(() => {
     const users = storage.get<any[]>('users') || [];
     const files = storage.get<any[]>('music_files') || [];
@@ -20,6 +23,34 @@ export function Dashboard({ user, currency }: { user: User; currency: Currency }
       overdue: totalOverdue,
     });
   }, [currency]);
+
+  // 3. Second useEffect: Birthday Logic
+  useEffect(() => {
+    const users = storage.get<User[]>('users') || [];
+    const today = new Date();
+    
+    // Get local month and day, padded with leading zeros (e.g., "07", "26")
+    const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+    const currentDay = String(today.getDate()).padStart(2, '0');
+    
+    // todayStr is defined right here, safely inside this useEffect
+    const todayStr = `${currentMonth}-${currentDay}`; 
+
+    const birthdays = users.filter(u => {
+      if (!u.birthdate) return false;
+      
+      // u.birthdate is in "YYYY-MM-DD" format
+      const parts = u.birthdate.split('-');
+      if (parts.length === 3) {
+        const userMonth = parts[1];
+        const userDay = parts[2];
+        return `${userMonth}-${userDay}` === todayStr;
+      }
+      return false;
+    });
+    
+    setBirthdayUsers(birthdays);
+  }, []);
 
   const fmt = (n: number) =>
     currency === 'TRY' ? `₺${n.toLocaleString('tr-TR')}` : `$${n.toLocaleString('en-US')}`;
@@ -39,6 +70,22 @@ export function Dashboard({ user, currency }: { user: User; currency: Currency }
         </h2>
         <p className="text-gray-600 mt-1">Here's what's happening with the choir today</p>
       </div>
+
+      {/* Birthday Banner */}
+      {birthdayUsers.length > 0 && (
+        <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-lg animate-pulse">
+          <div className="flex items-center space-x-4">
+            <div className="text-5xl">🎂</div>
+            <div>
+              <h3 className="text-2xl font-bold">Happy Birthday! 🎉</h3>
+              <p className="text-lg">
+                Wishing a wonderful birthday to: <strong>{birthdayUsers.map(u => u.name).join(', ')}</strong>
+              </p>
+              <p className="text-sm opacity-90 mt-1">May God bless you abundantly today and always! 🙏</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {cards.map((c, i) => (
