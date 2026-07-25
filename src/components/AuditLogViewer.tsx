@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import type { User, AuditLog } from '../types';
 
