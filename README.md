@@ -52,6 +52,7 @@ npm run dev
             <p>🎵 custodian@choir.org / cust123</p>
             <p>📝 secretary@choir.org / sec123</p>
             <p>👤 member@choir.org / user123</p>
+            Provost: provost@choir.org / prov123
 
 
 🐛 Troubleshooting
