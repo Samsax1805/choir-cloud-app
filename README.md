@@ -38,6 +38,10 @@ npm install -D tailwindcss@3.4.1 postcss@8.4.35 autoprefixer@10.4.18
 Step 4: Initialize Tailwind Configuration
 npx tailwindcss init -p
 
+Step 5: qr code extension installation
+npm install qrcode
+npm install -D @types/qrcode
+
 🚀 Launching the App
 npm run dev
 
