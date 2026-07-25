@@ -11,7 +11,7 @@ export function DebtTracker({ user, currency }: { user: User; currency: Currency
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'payment' | 'refund' | 'adjustment'>('payment');
-
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const canEdit = user.role === 'president' || user.role === 'secretary';
 
   useEffect(() => {
@@ -56,6 +56,15 @@ export function DebtTracker({ user, currency }: { user: User; currency: Currency
     a.download = 'member-debts.csv';
     a.click();
   };
+
+  {user.role === 'provost' && (
+  <button
+    onClick={() => setShowBulkUploadModal(true)}
+    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium"
+  >
+    Upload Debtors List
+  </button>
+)}
 
   const filtered = members.filter(m =>
     m.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -159,6 +168,70 @@ export function DebtTracker({ user, currency }: { user: User; currency: Currency
           </div>
         </div>
       )}
+      {showBulkUploadModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+      <h3 className="text-xl font-bold text-slate-900 mb-4">Bulk Upload Debtors</h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Upload a CSV file with columns: Name, Email, Amount
+      </p>
+      <input
+        type="file"
+        accept=".csv"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const text = ev.target?.result as string;
+              const rows = text.split('\n').slice(1);
+              const allUsers = storage.get<User[]>('users') || [];
+              const allDebts = storage.get<Debt[]>('debts') || [];
+              
+              rows.forEach(row => {
+                const [name, email, amount] = row.split(',');
+                if (name && email && amount) {
+                  const matchedUser = allUsers.find(u => 
+                    u.name.toLowerCase().includes(name.trim().toLowerCase()) ||
+                    u.email.toLowerCase() === email.trim().toLowerCase()
+                  );
+                  if (matchedUser) {
+                    allDebts.push({
+                      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+                      user_id: matchedUser.id,
+                      user_name: matchedUser.name,
+                      amount: parseFloat(amount.trim()),
+                      type: 'bulk_upload',
+                      status: 'pending',
+                      recorded_by: user.id,
+                      uploaded_by_name: user.name,
+                      created_at: new Date().toISOString().split('T')[0],
+                    });
+                  }
+                }
+              });
+              
+              storage.set('debts', allDebts);
+              logAudit(user, 'UPLOAD', 'debts', undefined, { type: 'bulk_upload', count: rows.length });
+              alert(`Processed ${rows.length} rows`);
+              setShowBulkUploadModal(false);
+                setDebts([...allDebts]);
+                setMembers(storage.get<any[]>('users') || []);
+            };
+            reader.readAsText(file);
+          }
+        }}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+      />
+      <button
+        onClick={() => setShowBulkUploadModal(false)}
+        className="w-full mt-4 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
