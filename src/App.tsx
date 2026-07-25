@@ -8,6 +8,7 @@ import { VoiceNotes } from './components/VoiceNotes';
 import { AuditLogViewer } from './components/AuditLogViewer';
 import { AdminPanel } from './components/AdminPanel';
 import { MinutesReceipts } from './components/MinutesReceipts';
+import { Attendance } from './components/Attendance';
 
 import { storage } from './utils/storage';
 import { seedData } from './utils/seed';
@@ -58,9 +59,9 @@ export default function App() {
         {view === 'debts' && <DebtTracker user={user} currency={currency} />}
         {view === 'voice' && <VoiceNotes user={user} />}
         
-        {/* 3. This routes to the new component */}
+        {/*  This routes to the new component */}
         {view === 'minutes' && <MinutesReceipts user={user} />} 
-        
+        {view === 'attendance' && (user.role === 'provost' || user.role === 'president') && <Attendance user={user} />}
         {view === 'audit' && user.role === 'president' && <AuditLogViewer user={user} />}
         {view === 'admin' && user.role === 'president' && <AdminPanel user={user} />}
       </main>
